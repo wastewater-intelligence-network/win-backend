@@ -1,8 +1,8 @@
 package model
 
 type Location struct {
-	Latitude  float32 `json:"latitude"`
-	Longitude float32 `json:"longitude"`
+	Type        string    `json:"type"`
+	Coordinates []float32 `json:"coordinates"`
 }
 
 type SampleCollectionRequest struct {
