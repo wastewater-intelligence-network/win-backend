@@ -20,15 +20,17 @@ import (
 func (win WinApp) handleCreateToken(c *gin.Context) {
 	token := uuid.New().String()
 
-	user, ok := c.Get("user")
+	u, ok := c.Get("user")
 	if !ok {
 		c.AbortWithError(http.StatusBadRequest, errors.New("User not parsed"))
 	}
 
-	auth.Append(tokenStrategy, token, user.(auth.Info))
+	user := u.(auth.Info)
+	auth.Append(tokenStrategy, token, user)
 	c.Header("Authorization", "Bearer "+token)
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
+		"roles": user.GetGroups(),
 	})
 }
 
@@ -205,7 +207,17 @@ func (win WinApp) handleSamplingStatusPatch(c *gin.Context) {
 	})
 
 	var sample model.Sample
-	result.Decode(&sample)
+	err = result.Decode(&sample)
+	if err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusOK,
+			gin.H{
+				"status":  500,
+				"message": "Cannot parse the sampleId. Err: " + err.Error(),
+			},
+		)
+		return
+	}
 
 	if win.isValidateSampleStatusPatch(samplingStatusRequest.StatusPatch, sample) {
 		sample.Status = model.SampleStatus(samplingStatusRequest.StatusPatch)
