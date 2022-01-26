@@ -32,7 +32,7 @@ func (win WinApp) getRoutes() []RouteObj {
 		}, {
 			"PATCH",
 			"/samplingStatus",
-			win.handleSamplingStatus,
+			win.handleSamplingStatusPatch,
 		}, {
 			"POST",
 			"/setCollectionPoints",
@@ -41,6 +41,10 @@ func (win WinApp) getRoutes() []RouteObj {
 			"GET",
 			"/getCollectionPoints",
 			win.handleGetCollectionPoints,
+		}, {
+			"GET",
+			"/getSamplesCollectedOn",
+			win.handleGetSamplesCollectedOn,
 		},
 	}
 	return routeList

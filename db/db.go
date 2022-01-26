@@ -53,6 +53,19 @@ func (conn *DBConnection) Find(collection string, filter interface{}) (*mongo.Cu
 	return cursor, nil
 }
 
+func (conn *DBConnection) FindOne(collection string, filter interface{}) *mongo.SingleResult {
+	res := conn.Database.Collection(collection).FindOne(conn.ctx, filter)
+	return res
+}
+
+func (conn *DBConnection) UpdateOne(collection string, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	res, err := conn.Database.Collection(collection).UpdateOne(conn.ctx, filter, update)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (conn *DBConnection) DeleteCollection(collection string) error {
 	_, err := conn.Database.Collection(collection).DeleteMany(conn.ctx, gin.H{})
 	if err != nil {

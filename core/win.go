@@ -43,6 +43,9 @@ func (win WinApp) setRoutes() {
 		case "POST":
 			win.gin.POST(r.RelativePath, r.Handler)
 			break
+		case "PATCH":
+			win.gin.PATCH(r.RelativePath, r.Handler)
+			break
 		}
 	}
 }

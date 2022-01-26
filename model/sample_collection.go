@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type SampleStatus string
 
@@ -12,23 +16,32 @@ const (
 	SampleStatusResultOut     SampleStatus = "sample_result_out"
 )
 
+var StatusSequence = []SampleStatus{
+	SampleStatusCollected,
+	SampleStatusInTransit,
+	SampleStatusReceivedAtLab,
+	SampleStatusTestInProgess,
+	SampleStatusResultOut,
+}
+
 type Location struct {
 	Type        string    `json:"type,omitempty"`
 	Coordinates []float64 `json:"coordinates,omitempty"`
 }
 
 type StatusLog struct {
-	Timestamp time.Time
-	Status    SampleStatus
-	Message   string
+	Timestamp time.Time    `json:"timestamp,omitempty" bson:"timestamp"`
+	Status    SampleStatus `json:"status,omitempty" bson:"status"`
+	Message   string       `json:"message,omitempty" bson:"message"`
 }
 
 type Sample struct {
-	SampleTakenOn            time.Time       `json:"sampleTakenOn,omitempty" bson:"sampleTakenOn"`
-	ContainerId              string          `json:"containerId,omitempty" bson:"containerId"`
-	SampleCollectionLocation CollectionPoint `json:"sampleCollectionLocation,omitempty" bson:"sampleCollectionLocation"`
-	Status                   SampleStatus    `json:"status,omitempty" bson:"status"`
-	StatusLogList            []StatusLog     `json:"statusLog,omitempty" bson:"statusLog"`
+	SampleId                 primitive.ObjectID `json:"sampleId,omitempty" bson:"_id"`
+	SampleTakenOn            time.Time          `json:"sampleTakenOn,omitempty" bson:"sampleTakenOn"`
+	ContainerId              string             `json:"containerId,omitempty" bson:"containerId"`
+	SampleCollectionLocation CollectionPoint    `json:"sampleCollectionLocation,omitempty" bson:"sampleCollectionLocation"`
+	Status                   SampleStatus       `json:"status,omitempty" bson:"status"`
+	StatusLogList            []StatusLog        `json:"statusLog,omitempty" bson:"statusLog"`
 }
 
 type SamplingRequest struct {
@@ -38,4 +51,6 @@ type SamplingRequest struct {
 }
 
 type SamplingStatusRequest struct {
+	SampleId    string `json:"sampleId,omitempty" bson:"sampleId"`
+	StatusPatch string `json:"statusPatch,omitempty" bson:"statusPatch,omitempty"`
 }

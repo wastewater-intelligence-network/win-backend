@@ -40,8 +40,8 @@ func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.
 		"$and": []bson.M{
 			{
 				"sampleTakenOn": bson.M{
-					"$gt": utils.GetDayStartTime(),
-					"$lt": utils.GetDayEndTime(),
+					"$gt": utils.GetDayTime(0, 0, 0, 0, ""),
+					"$lt": utils.GetDayTime(23, 59, 59, 0, ""),
 				},
 			},
 			{
@@ -84,4 +84,41 @@ func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.
 		return fmt.Errorf("Record with container id or collection point exist")
 	}
 	return nil
+}
+
+func (win WinApp) getSamplesBetweenTime(c context.Context, start, end time.Time) ([]model.Sample, error) {
+	filter := bson.M{
+		"sampleTakenOn": bson.M{
+			"$gt": start,
+			"$lt": end,
+		},
+	}
+	cursor, err := win.conn.Find(SAMPLE_COLLECTION_RECORD_DB, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]model.Sample, 0)
+	err = cursor.All(c, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (win WinApp) isValidateSampleStatusPatch(statusPatch string, sample model.Sample) bool {
+	var idx int = 0
+	for i, s := range model.StatusSequence {
+		if string(s) == statusPatch {
+			idx = i
+		}
+	}
+
+	if idx < 1 {
+		return false
+	} else if sample.Status == model.StatusSequence[idx-1] {
+		return true
+	}
+
+	return false
 }
