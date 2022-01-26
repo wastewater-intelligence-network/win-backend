@@ -3,6 +3,7 @@ package core
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/wastewater-intelligence-network/win-api/db"
+	"github.com/wastewater-intelligence-network/win-api/utils"
 )
 
 var (
@@ -25,13 +26,23 @@ func NewWinApp() (*WinApp, error) {
 		gin:  gin.Default(),
 		conn: conn,
 	}
-	app.gin.Use(AuthMiddleware())
+	policy := app.getPolicy()
+	app.gin.Use(AuthMiddleware(policy))
+	app.gin.Use(PolicyMiddleware(policy))
 	app.setRoutes()
 	return app, nil
 }
 
 func (win WinApp) Run() {
 	win.gin.Run("127.0.0.1:8080")
+}
+
+func (win WinApp) getPolicy() *utils.Policy {
+	var policy = utils.NewPolicy()
+	for _, r := range win.getRoutes() {
+		policy.AddRule(r.RelativePath, r.PolicyRoles)
+	}
+	return policy
 }
 
 func (win WinApp) setRoutes() {
