@@ -27,8 +27,12 @@ func (win WinApp) getRoutes() []RouteObj {
 			win.handleSetSchedule,
 		}, {
 			"POST",
-			"/requestSampleCollection",
-			win.handleStartSampleCollection,
+			"/samplingRequest",
+			win.handleSamplingRequest,
+		}, {
+			"PATCH",
+			"/samplingStatus",
+			win.handleSamplingStatus,
 		}, {
 			"POST",
 			"/setCollectionPoints",

@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (win WinApp) GetNearbyPoints(c context.Context, request model.SampleCollectionRequest) ([]model.CollectionPoint, error) {
+func (win WinApp) GetNearbyPoints(c context.Context, request model.SamplingRequest) ([]model.CollectionPoint, error) {
 	cur, err := win.conn.Find(SAMPLE_COLLECTION_DB, bson.M{
 		"location": bson.M{
 			"$geoWithin": bson.M{
@@ -33,7 +33,7 @@ func (win WinApp) GetNearbyPoints(c context.Context, request model.SampleCollect
 	return collectionPoints, nil
 }
 
-func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.SampleCollectionRequest, point model.CollectionPoint) error {
+func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.SamplingRequest, point model.CollectionPoint) error {
 	// Validation to check if sample was collected earlier on this location
 	// Validation if the container id is used to collect a sample earlier
 	filter := bson.M{
@@ -61,14 +61,14 @@ func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.
 		return err
 	}
 
-	var res []model.SampleCollection
+	var res []model.Sample
 	err = cursor.All(c, &res)
 	if err != nil {
 		return err
 	}
 
 	if len(res) == 0 {
-		win.conn.Insert(SAMPLE_COLLECTION_RECORD_DB, model.SampleCollection{
+		win.conn.Insert(SAMPLE_COLLECTION_RECORD_DB, model.Sample{
 			SampleTakenOn:            time.Now(),
 			ContainerId:              request.ContainerId,
 			SampleCollectionLocation: point,

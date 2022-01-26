@@ -80,10 +80,10 @@ func (win WinApp) handleGetSchedule(c *gin.Context) {
 	})
 }
 
-func (win WinApp) handleStartSampleCollection(c *gin.Context) {
+func (win WinApp) handleSamplingRequest(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 
-	var sampleCollRequest model.SampleCollectionRequest
+	var sampleCollRequest model.SamplingRequest
 	err := decoder.Decode(&sampleCollRequest)
 	if err != nil {
 		c.AbortWithStatusJSON(
@@ -169,9 +169,7 @@ func (win WinApp) handleStartSampleCollection(c *gin.Context) {
 	}
 }
 
-func (win WinApp) handleStartTransportation(c *gin.Context) {
-	// Input: sample id
-	// Output: status
+func (win WinApp) handleSamplingStatus(c *gin.Context) {
 
 }
 

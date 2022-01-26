@@ -23,7 +23,7 @@ type StatusLog struct {
 	Message   string
 }
 
-type SampleCollection struct {
+type Sample struct {
 	SampleTakenOn            time.Time       `json:"sampleTakenOn,omitempty" bson:"sampleTakenOn"`
 	ContainerId              string          `json:"containerId,omitempty" bson:"containerId"`
 	SampleCollectionLocation CollectionPoint `json:"sampleCollectionLocation,omitempty" bson:"sampleCollectionLocation"`
@@ -31,8 +31,11 @@ type SampleCollection struct {
 	StatusLogList            []StatusLog     `json:"statusLog,omitempty" bson:"statusLog"`
 }
 
-type SampleCollectionRequest struct {
+type SamplingRequest struct {
 	ContainerId string   `json:"containerId,omitempty" bson:"containerId"`
 	Location    Location `json:"location,omitempty" bson:"location"`
 	PointId     string   `json:"pointId,omitempty" bson:"pointId"`
+}
+
+type SamplingStatusRequest struct {
 }
