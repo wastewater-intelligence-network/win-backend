@@ -89,12 +89,84 @@ func (win WinApp) handleStartSampleCollection(c *gin.Context) {
 		c.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{
-				"error": "Request body is not correct",
+				"status":  500,
+				"message": "Request body is not correct",
 			},
 		)
 	}
 
-	c.JSON(http.StatusOK, sampleCollRequest)
+	points, err := win.GetNearbyPoints(c.Request.Context(), sampleCollRequest)
+	if err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusOK,
+			gin.H{
+				"status":  500,
+				"message": "Error while retrieving the nearby point",
+			},
+		)
+		return
+	}
+
+	if len(points) == 0 {
+		c.AbortWithStatusJSON(
+			http.StatusOK,
+			gin.H{
+				"status":  500,
+				"message": "No collection point nearby",
+			},
+		)
+		return
+	} else if len(points) == 1 {
+		err = win.InsertSampleCollectionRecord(c.Request.Context(), sampleCollRequest, points[0])
+		if err != nil {
+			c.AbortWithStatusJSON(
+				http.StatusOK,
+				gin.H{
+					"status":  500,
+					"message": err.Error(),
+				},
+			)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status":  200,
+			"message": "New sample added to the database",
+		})
+	} else {
+		if sampleCollRequest.PointId != "" {
+			for _, p := range points {
+				if p.PointId == sampleCollRequest.PointId {
+					err = win.InsertSampleCollectionRecord(c.Request.Context(), sampleCollRequest, p)
+					if err != nil {
+						c.AbortWithStatusJSON(
+							http.StatusOK,
+							gin.H{
+								"status":  500,
+								"message": err.Error(),
+							},
+						)
+						return
+					}
+
+					c.JSON(http.StatusOK, gin.H{
+						"status":  200,
+						"message": "New sample added to the database",
+					})
+					return
+				}
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"status":  500,
+				"message": "No Point found with pointId: " + sampleCollRequest.PointId,
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  501,
+				"message": "Multiple points at the given location. Pick one pointId",
+				"list":    points,
+			})
+		}
+	}
 }
 
 func (win WinApp) handleStartTransportation(c *gin.Context) {
@@ -120,7 +192,7 @@ func (win WinApp) handleSetCollectionPoints(c *gin.Context) {
 		})
 	}
 
-	err = win.conn.DeleteCollection("collection_point")
+	err = win.conn.DeleteCollection(SAMPLE_COLLECTION_DB)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -128,7 +200,8 @@ func (win WinApp) handleSetCollectionPoints(c *gin.Context) {
 	}
 
 	for _, collectionPoint := range collectionPoints {
-		err = win.conn.Insert("collection_point", collectionPoint)
+		fmt.Println(collectionPoint)
+		err = win.conn.Insert(SAMPLE_COLLECTION_DB, collectionPoint)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
@@ -142,7 +215,7 @@ func (win WinApp) handleSetCollectionPoints(c *gin.Context) {
 func (win WinApp) handleGetCollectionPoints(c *gin.Context) {
 	var collectionPoints []model.CollectionPoint
 
-	cursor, err := win.conn.Find("collection_point", gin.H{})
+	cursor, err := win.conn.Find(SAMPLE_COLLECTION_DB, gin.H{})
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

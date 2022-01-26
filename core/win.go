@@ -5,6 +5,11 @@ import (
 	"github.com/wastewater-intelligence-network/win-api/db"
 )
 
+var (
+	SAMPLE_COLLECTION_DB        = "collection_points"
+	SAMPLE_COLLECTION_RECORD_DB = "sample_collection"
+)
+
 type WinApp struct {
 	gin  *gin.Engine
 	conn *db.DBConnection
