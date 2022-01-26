@@ -37,12 +37,12 @@ func NewDBConnection() (*DBConnection, error) {
 	}, nil
 }
 
-func (conn *DBConnection) Insert(collection string, doc interface{}) error {
-	_, err := conn.Database.Collection(collection).InsertOne(conn.ctx, doc)
+func (conn *DBConnection) Insert(collection string, doc interface{}) (*mongo.InsertOneResult, error) {
+	res, err := conn.Database.Collection(collection).InsertOne(conn.ctx, doc)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return res, nil
 }
 
 func (conn *DBConnection) Find(collection string, filter interface{}) (*mongo.Cursor, error) {

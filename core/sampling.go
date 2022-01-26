@@ -8,6 +8,7 @@ import (
 	"github.com/wastewater-intelligence-network/win-api/model"
 	"github.com/wastewater-intelligence-network/win-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (win WinApp) GetNearbyPoints(c context.Context, request model.SamplingRequest) ([]model.CollectionPoint, error) {
@@ -33,7 +34,7 @@ func (win WinApp) GetNearbyPoints(c context.Context, request model.SamplingReque
 	return collectionPoints, nil
 }
 
-func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.SamplingRequest, point model.CollectionPoint) error {
+func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.SamplingRequest, point model.CollectionPoint) (*model.Sample, error) {
 	// Validation to check if sample was collected earlier on this location
 	// Validation if the container id is used to collect a sample earlier
 	filter := bson.M{
@@ -58,17 +59,17 @@ func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.
 	}
 	cursor, err := win.conn.Find(SAMPLE_COLLECTION_RECORD_DB, filter)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var res []model.Sample
 	err = cursor.All(c, &res)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(res) == 0 {
-		win.conn.Insert(SAMPLE_COLLECTION_RECORD_DB, model.Sample{
+		sample := model.Sample{
 			SampleTakenOn:            time.Now(),
 			ContainerId:              request.ContainerId,
 			SampleCollectionLocation: point,
@@ -79,11 +80,19 @@ func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.
 					Status:    model.SampleStatusCollected,
 				},
 			},
-		})
+		}
+		res, err := win.conn.Insert(SAMPLE_COLLECTION_RECORD_DB, sample)
+		if err != nil {
+			return nil, err
+		}
+		sId, ok := res.InsertedID.(primitive.ObjectID)
+		if ok {
+			sample.SampleId = sId
+		}
+		return &sample, nil
 	} else {
-		return fmt.Errorf("Record with container id or collection point exist")
+		return nil, fmt.Errorf("Record with container id or collection point exist")
 	}
-	return nil
 }
 
 func (win WinApp) getSamplesBetweenTime(c context.Context, start, end time.Time) ([]model.Sample, error) {

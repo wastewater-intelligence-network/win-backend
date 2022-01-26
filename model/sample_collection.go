@@ -36,7 +36,7 @@ type StatusLog struct {
 }
 
 type Sample struct {
-	SampleId                 primitive.ObjectID `json:"sampleId,omitempty" bson:"_id"`
+	SampleId                 primitive.ObjectID `json:"sampleId,omitempty" bson:"_id,omitempty"`
 	SampleTakenOn            time.Time          `json:"sampleTakenOn,omitempty" bson:"sampleTakenOn"`
 	ContainerId              string             `json:"containerId,omitempty" bson:"containerId"`
 	SampleCollectionLocation CollectionPoint    `json:"sampleCollectionLocation,omitempty" bson:"sampleCollectionLocation"`

@@ -47,7 +47,7 @@ func (win WinApp) handleSetSchedule(c *gin.Context) {
 			Longitude: 77.36353,
 		},
 	} */
-	err := win.conn.Insert("test", schedule)
+	_, err := win.conn.Insert("test", schedule)
 	if err != nil {
 		panic(err)
 	}
@@ -123,7 +123,7 @@ func (win WinApp) handleSamplingRequest(c *gin.Context) {
 		)
 		return
 	} else if len(points) == 1 {
-		err = win.InsertSampleCollectionRecord(c.Request.Context(), sampleCollRequest, points[0])
+		sample, err := win.InsertSampleCollectionRecord(c.Request.Context(), sampleCollRequest, points[0])
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusOK,
@@ -135,14 +135,15 @@ func (win WinApp) handleSamplingRequest(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"status":  200,
-			"message": "New sample added to the database",
+			"status":        200,
+			"message":       "New sample added to the database",
+			"sampleDetails": sample,
 		})
 	} else {
 		if sampleCollRequest.PointId != "" {
 			for _, p := range points {
 				if p.PointId == sampleCollRequest.PointId {
-					err = win.InsertSampleCollectionRecord(c.Request.Context(), sampleCollRequest, p)
+					sample, err := win.InsertSampleCollectionRecord(c.Request.Context(), sampleCollRequest, p)
 					if err != nil {
 						c.AbortWithStatusJSON(
 							http.StatusOK,
@@ -155,8 +156,9 @@ func (win WinApp) handleSamplingRequest(c *gin.Context) {
 					}
 
 					c.JSON(http.StatusOK, gin.H{
-						"status":  200,
-						"message": "New sample added to the database",
+						"status":        200,
+						"message":       "New sample added to the database",
+						"sampleDetails": sample,
 					})
 					return
 				}
@@ -285,7 +287,7 @@ func (win WinApp) handleSetCollectionPoints(c *gin.Context) {
 
 	for _, collectionPoint := range collectionPoints {
 		fmt.Println(collectionPoint)
-		err = win.conn.Insert(SAMPLE_COLLECTION_DB, collectionPoint)
+		_, err = win.conn.Insert(SAMPLE_COLLECTION_DB, collectionPoint)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
