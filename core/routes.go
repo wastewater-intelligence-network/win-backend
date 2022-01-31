@@ -24,7 +24,7 @@ func (win WinApp) getRoutes() []RouteObj {
 			"GET",
 			"/getSchedule",
 			win.handleGetSchedule,
-			utils.PolicyRules{"admin", "collector"},
+			utils.PolicyRules{utils.PolicyOpen},
 		}, {
 			"POST",
 			"/setSchedule",
