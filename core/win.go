@@ -34,7 +34,7 @@ func NewWinApp() (*WinApp, error) {
 }
 
 func (win WinApp) Run() {
-	win.gin.Run("127.0.0.1:8080")
+	win.gin.Run("0.0.0.0:8080")
 }
 
 func (win WinApp) getPolicy() *utils.Policy {
