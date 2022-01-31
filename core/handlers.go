@@ -55,14 +55,14 @@ func (win WinApp) handleSetSchedule(c *gin.Context) {
 }
 
 func (win WinApp) handleGetSchedule(c *gin.Context) {
-	user, ok := c.Get("user")
-	if !ok {
-		c.AbortWithError(http.StatusBadRequest, errors.New("User not parsed"))
-	}
+	// user, ok := c.Get("user")
+	// if !ok {
+	// 	c.AbortWithError(http.StatusBadRequest, errors.New("User not parsed"))
+	// }
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "schedule",
-		"user":    user.(auth.Info),
+		"user":    "user",
 		"schedule": []gin.H{
 			{
 				"assignedPointId":   23,
