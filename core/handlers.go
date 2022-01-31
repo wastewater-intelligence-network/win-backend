@@ -14,7 +14,6 @@ import (
 	"github.com/wastewater-intelligence-network/win-api/model"
 	"github.com/wastewater-intelligence-network/win-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (win WinApp) handleCreateToken(c *gin.Context) {
@@ -192,24 +191,12 @@ func (win WinApp) handleSamplingStatusPatch(c *gin.Context) {
 		return
 	}
 
-	id, err := primitive.ObjectIDFromHex(samplingStatusRequest.SampleId)
-	if err != nil {
-		c.AbortWithStatusJSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status":  500,
-				"message": "Cannot parse the sampleId",
-			},
-		)
-		return
-	}
-	fmt.Println(id)
 	result := win.conn.FindOne(SAMPLE_COLLECTION_RECORD_DB, bson.M{
-		"_id": id,
+		"containerId": samplingStatusRequest.ContainerId,
 	})
 
 	var sample model.Sample
-	err = result.Decode(&sample)
+	err := result.Decode(&sample)
 	if err != nil {
 		c.AbortWithStatusJSON(
 			http.StatusOK,
@@ -228,7 +215,7 @@ func (win WinApp) handleSamplingStatusPatch(c *gin.Context) {
 			Status:    sample.Status,
 		})
 		_, err := win.conn.UpdateOne(SAMPLE_COLLECTION_RECORD_DB, bson.M{
-			"_id": id,
+			"containerId": samplingStatusRequest.ContainerId,
 		}, bson.M{
 			"$set": sample,
 		})

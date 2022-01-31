@@ -53,6 +53,6 @@ type SamplingRequest struct {
 }
 
 type SamplingStatusRequest struct {
-	SampleId    string `json:"sampleId,omitempty" bson:"sampleId"`
+	ContainerId string `json:"containerId,omitempty" bson:"containerId"`
 	StatusPatch string `json:"statusPatch,omitempty" bson:"statusPatch,omitempty"`
 }
