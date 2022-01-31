@@ -36,18 +36,20 @@ type StatusLog struct {
 }
 
 type Sample struct {
-	SampleId                 primitive.ObjectID `json:"sampleId,omitempty" bson:"_id,omitempty"`
-	SampleTakenOn            time.Time          `json:"sampleTakenOn,omitempty" bson:"sampleTakenOn"`
-	ContainerId              string             `json:"containerId,omitempty" bson:"containerId"`
-	SampleCollectionLocation CollectionPoint    `json:"sampleCollectionLocation,omitempty" bson:"sampleCollectionLocation"`
-	Status                   SampleStatus       `json:"status,omitempty" bson:"status"`
-	StatusLogList            []StatusLog        `json:"statusLog,omitempty" bson:"statusLog"`
+	SampleId                 primitive.ObjectID     `json:"sampleId,omitempty" bson:"_id,omitempty"`
+	SampleTakenOn            time.Time              `json:"sampleTakenOn,omitempty" bson:"sampleTakenOn"`
+	ContainerId              string                 `json:"containerId,omitempty" bson:"containerId"`
+	SampleCollectionLocation CollectionPoint        `json:"sampleCollectionLocation,omitempty" bson:"sampleCollectionLocation"`
+	Status                   SampleStatus           `json:"status,omitempty" bson:"status"`
+	StatusLogList            []StatusLog            `json:"statusLog,omitempty" bson:"statusLog"`
+	AdditionalData           map[string]interface{} `json:"additionalData,omitempty" bson:"additionalData"`
 }
 
 type SamplingRequest struct {
-	ContainerId string   `json:"containerId,omitempty" bson:"containerId"`
-	Location    Location `json:"location,omitempty" bson:"location"`
-	PointId     string   `json:"pointId,omitempty" bson:"pointId"`
+	ContainerId    string                 `json:"containerId,omitempty" bson:"containerId"`
+	Location       Location               `json:"location,omitempty" bson:"location"`
+	PointId        string                 `json:"pointId,omitempty" bson:"pointId"`
+	AdditionalData map[string]interface{} `json:"additionalData,omitempty" bson:"additionalData"`
 }
 
 type SamplingStatusRequest struct {

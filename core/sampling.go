@@ -80,6 +80,7 @@ func (win WinApp) InsertSampleCollectionRecord(c context.Context, request model.
 					Status:    model.SampleStatusCollected,
 				},
 			},
+			AdditionalData: request.AdditionalData,
 		}
 		res, err := win.conn.Insert(SAMPLE_COLLECTION_RECORD_DB, sample)
 		if err != nil {
