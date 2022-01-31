@@ -22,6 +22,7 @@ func AuthMiddleware(policy *utils.Policy) gin.HandlerFunc {
 	strategy := setupGoGuardian(policy)
 	return func(c *gin.Context) {
 		if policy.IsOpen(c.Request.RequestURI) {
+			fmt.Println("Open")
 			c.Next()
 			return
 		}
@@ -55,7 +56,7 @@ func getValidationUserFunc(policy *utils.Policy) basic.AuthenticateFunc {
 			return auth.NewUserInfo(
 				"admin",
 				"1",
-				[]string{"transporter"},
+				[]string{"collector", "transporter", "admin"},
 				nil,
 			), nil
 		}
@@ -66,13 +67,17 @@ func getValidationUserFunc(policy *utils.Policy) basic.AuthenticateFunc {
 
 func PolicyMiddleware(policy *utils.Policy) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if policy.IsOpen(c.Request.RequestURI) {
+			c.Next()
+			return
+		}
+
 		u, ok := c.Get("user")
 		if !ok {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		user := u.(auth.Info)
-		fmt.Println(user)
 		if !policy.Check(c.Request.RequestURI, user) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
