@@ -41,7 +41,7 @@ func AuthMiddleware(policy *utils.Policy) gin.HandlerFunc {
 }
 
 func setupGoGuardian(policy *utils.Policy) union.Union {
-	cache := NewCache(time.Minute * 30)
+	cache := NewCache(time.Hour * 168)
 	basicStrategy := basic.NewCached(getValidationUserFunc(policy), cache)
 	tokenStrategy = token.New(token.NoOpAuthenticate, cache)
 	strategy := union.New(basicStrategy, tokenStrategy)
