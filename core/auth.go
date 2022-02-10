@@ -14,6 +14,10 @@ import (
 	"github.com/wastewater-intelligence-network/win-api/utils"
 )
 
+const (
+	TokenExpiryHours = time.Hour * 168
+)
+
 var (
 	tokenStrategy auth.Strategy
 )
@@ -41,7 +45,7 @@ func AuthMiddleware(policy *utils.Policy) gin.HandlerFunc {
 }
 
 func setupGoGuardian(policy *utils.Policy) union.Union {
-	cache := NewCache(time.Hour * 168)
+	cache := NewCache(TokenExpiryHours)
 	basicStrategy := basic.NewCached(getValidationUserFunc(policy), cache)
 	tokenStrategy = token.New(token.NoOpAuthenticate, cache)
 	strategy := union.New(basicStrategy, tokenStrategy)

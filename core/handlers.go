@@ -28,8 +28,9 @@ func (win WinApp) handleCreateToken(c *gin.Context) {
 	auth.Append(tokenStrategy, token, user)
 	c.Header("Authorization", "Bearer "+token)
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-		"roles": user.GetGroups(),
+		"token":                token,
+		"roles":                user.GetGroups(),
+		"tokenExpiryTimestamp": time.Now().Add(TokenExpiryHours).Unix(),
 	})
 }
 
