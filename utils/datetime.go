@@ -31,16 +31,17 @@ func splitDate(date string) (year int, month time.Month, day int, err error) {
 func GetDayTime(hour, min, sec, nsec int, date string) time.Time {
 	var year, day int
 	var month time.Month
-	if date != "" {
-		year, month, day, _ = splitDate(date)
-	} else {
-		t := time.Now()
-		year, month, day = t.Date()
-	}
 
 	loc, err := time.LoadLocation("Asia/Kolkata")
 	if err != nil {
 		panic(err)
+	}
+
+	if date != "" {
+		year, month, day, _ = splitDate(date)
+	} else {
+		t := time.Now().In(loc)
+		year, month, day = t.Date()
 	}
 
 	return time.Date(year, month, day, hour, min, sec, nsec, loc)
