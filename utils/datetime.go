@@ -38,5 +38,10 @@ func GetDayTime(hour, min, sec, nsec int, date string) time.Time {
 		year, month, day = t.Date()
 	}
 
-	return time.Date(year, month, day, hour, min, sec, nsec, time.Now().Location())
+	loc, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		panic(err)
+	}
+
+	return time.Date(year, month, day, hour, min, sec, nsec, loc)
 }
