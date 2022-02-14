@@ -9,6 +9,7 @@ import (
 var (
 	SAMPLE_COLLECTION_DB        = "collection_points"
 	SAMPLE_COLLECTION_RECORD_DB = "sample_collection"
+	WIN_COLLECTION_USERS        = "users"
 )
 
 type WinApp struct {
@@ -27,7 +28,7 @@ func NewWinApp() (*WinApp, error) {
 		conn: conn,
 	}
 	policy := app.getPolicy()
-	app.gin.Use(AuthMiddleware(policy))
+	app.gin.Use(AuthMiddleware(policy, conn))
 	app.gin.Use(PolicyMiddleware(policy))
 	app.setRoutes()
 	return app, nil

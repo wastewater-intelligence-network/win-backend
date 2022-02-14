@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"crypto/sha1"
 	"fmt"
 	"net/http"
 	"time"
@@ -11,7 +12,10 @@ import (
 	"github.com/shaj13/go-guardian/v2/auth/strategies/basic"
 	"github.com/shaj13/go-guardian/v2/auth/strategies/token"
 	"github.com/shaj13/go-guardian/v2/auth/strategies/union"
+	"github.com/wastewater-intelligence-network/win-api/db"
+	"github.com/wastewater-intelligence-network/win-api/model"
 	"github.com/wastewater-intelligence-network/win-api/utils"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 const (
@@ -22,8 +26,8 @@ var (
 	tokenStrategy auth.Strategy
 )
 
-func AuthMiddleware(policy *utils.Policy) gin.HandlerFunc {
-	strategy := setupGoGuardian(policy)
+func AuthMiddleware(policy *utils.Policy, conn *db.DBConnection) gin.HandlerFunc {
+	strategy := setupGoGuardian(policy, conn)
 	return func(c *gin.Context) {
 		if policy.IsOpen(c.Request.RequestURI) {
 			fmt.Println("Open")
@@ -44,23 +48,35 @@ func AuthMiddleware(policy *utils.Policy) gin.HandlerFunc {
 	}
 }
 
-func setupGoGuardian(policy *utils.Policy) union.Union {
+func setupGoGuardian(policy *utils.Policy, conn *db.DBConnection) union.Union {
 	cache := NewCache(TokenExpiryHours)
-	basicStrategy := basic.NewCached(getValidationUserFunc(policy), cache)
+	basicStrategy := basic.NewCached(getValidationUserFunc(policy, conn), cache)
 	tokenStrategy = token.New(token.NoOpAuthenticate, cache)
 	strategy := union.New(basicStrategy, tokenStrategy)
 
 	return strategy
 }
 
-func getValidationUserFunc(policy *utils.Policy) basic.AuthenticateFunc {
-	return func(ctx context.Context, r *http.Request, userName, password string) (auth.Info, error) {
-		// here connect to db or any other service to fetch user and validate it.
-		if userName == "admin" && password == "admin" {
+func getValidationUserFunc(policy *utils.Policy, conn *db.DBConnection) basic.AuthenticateFunc {
+	return func(ctx context.Context, r *http.Request, username, password string) (auth.Info, error) {
+		res := conn.FindOne(WIN_COLLECTION_USERS, bson.M{
+			"username": username,
+		})
+
+		var user model.User
+		err := res.Decode(&user)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid credentials")
+		}
+
+		passwordHash := sha1.Sum([]byte(password))
+		hashString := fmt.Sprintf("%x", passwordHash)
+
+		if user.Hash == hashString {
 			return auth.NewUserInfo(
-				"admin",
-				"1",
-				[]string{"collector", "transporter", "admin"},
+				user.Username,
+				user.ID.String(),
+				user.Roles,
 				nil,
 			), nil
 		}
