@@ -8,5 +8,6 @@ type User struct {
 	Type     string             `bson:"type,omitempty"`
 	Username string             `bson:"username,omitempty"`
 	Hash     string             `bson:"hash,omitempty"`
+	Password string             `bson:"password,omitempty"`
 	Roles    []string           `bson:"roles,omitempty"`
 }

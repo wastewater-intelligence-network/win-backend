@@ -1,6 +1,8 @@
 package core
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +17,47 @@ import (
 	"github.com/wastewater-intelligence-network/win-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+func (win WinApp) handleNewUser(c *gin.Context) {
+	decoder := json.NewDecoder(c.Request.Body)
+
+	var user model.User
+	err := decoder.Decode(&user)
+	if err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  505,
+				"message": err.Error(),
+			},
+		)
+		return
+	}
+
+	passwordHash := sha1.Sum([]byte(user.Password))
+	user.Hash = hex.EncodeToString(passwordHash[:])
+	user.Password = ""
+
+	_, err = win.conn.Insert(WIN_COLLECTION_USERS, user)
+	if err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  506,
+				"message": err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  200,
+			"message": "User Created",
+		},
+	)
+}
 
 func (win WinApp) handleCreateToken(c *gin.Context) {
 	token := uuid.New().String()

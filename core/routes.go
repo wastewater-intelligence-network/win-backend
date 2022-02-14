@@ -16,6 +16,11 @@ func (win WinApp) getRoutes() []RouteObj {
 
 	var routeList = []RouteObj{
 		{
+			"POST",
+			"/register",
+			win.handleNewUser,
+			utils.PolicyRules{"admin"},
+		}, {
 			"GET",
 			"/login",
 			win.handleCreateToken,

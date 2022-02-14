@@ -72,6 +72,10 @@ func getValidationUserFunc(policy *utils.Policy, conn *db.DBConnection) basic.Au
 		passwordHash := sha1.Sum([]byte(password))
 		hashString := fmt.Sprintf("%x", passwordHash)
 
+		fmt.Println(user.Hash)
+		fmt.Println(hashString)
+		fmt.Println(user)
+
 		if user.Hash == hashString {
 			return auth.NewUserInfo(
 				user.Username,
