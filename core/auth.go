@@ -39,6 +39,7 @@ func AuthMiddleware(policy *utils.Policy, conn *db.DBConnection) gin.HandlerFunc
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": "User Unauthorised",
 				"error":   err.Error(),
+				"status":  401,
 			})
 			return
 		}
