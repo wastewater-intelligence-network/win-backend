@@ -42,11 +42,6 @@ func GetDayTime(hour, min, sec, nsec int, date string) time.Time {
 	} else {
 		t := time.Now().In(loc)
 		year, month, day = t.Date()
-		h, m, _ := t.Clock()
-		if h*60+m+330 > 1470 {
-			day += 1
-		}
-
 	}
 
 	return time.Date(year, month, day, hour, min, sec, nsec, loc)
