@@ -117,18 +117,31 @@ func (win WinApp) getSamplesBetweenTime(c context.Context, start, end time.Time)
 }
 
 func (win WinApp) isValidateSampleStatusPatch(statusPatch string, sample model.Sample) bool {
-	var idx int = 0
+	var idxPatch int = 0
+	var idxStatus int = 0
 	for i, s := range model.StatusSequence {
 		if string(s) == statusPatch {
-			idx = i
+			idxPatch = i
+		}
+		if s == sample.Status {
+			idxStatus = i
 		}
 	}
 
-	if idx < 1 {
+	if idxPatch < 1 || idxPatch <= idxStatus {
 		return false
-	} else if sample.Status == model.StatusSequence[idx-1] {
+	} else {
 		return true
 	}
 
 	return false
+}
+
+func (win WinApp) getPreviousStatusList(statusPatch string) []model.SampleStatus {
+	for i, s := range model.StatusSequence {
+		if string(s) == statusPatch {
+			return model.StatusSequence[1:i]
+		}
+	}
+	return []model.SampleStatus{}
 }

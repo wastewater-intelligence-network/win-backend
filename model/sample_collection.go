@@ -33,6 +33,7 @@ type StatusLog struct {
 	Timestamp time.Time    `json:"timestamp,omitempty" bson:"timestamp"`
 	Status    SampleStatus `json:"status,omitempty" bson:"status"`
 	Message   string       `json:"message,omitempty" bson:"message"`
+	Error     string       `json:"error,omitempty" bson:"error"`
 }
 
 type Sample struct {

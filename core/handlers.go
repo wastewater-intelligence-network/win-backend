@@ -254,6 +254,18 @@ func (win WinApp) handleSamplingStatusPatch(c *gin.Context) {
 
 	if win.isValidateSampleStatusPatch(samplingStatusRequest.StatusPatch, sample) {
 		sample.Status = model.SampleStatus(samplingStatusRequest.StatusPatch)
+
+		prevStatusList := win.getPreviousStatusList(samplingStatusRequest.StatusPatch)
+
+		for _, prevStatus := range prevStatusList {
+			sample.StatusLogList = append(sample.StatusLogList, model.StatusLog{
+				Timestamp: time.Now(),
+				Status:    prevStatus,
+				Error:     "step_skipped",
+				Message:   "This sample is not marked for this step",
+			})
+		}
+
 		sample.StatusLogList = append(sample.StatusLogList, model.StatusLog{
 			Timestamp: time.Now(),
 			Status:    sample.Status,
