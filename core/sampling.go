@@ -17,7 +17,7 @@ func (win WinApp) GetNearbyPoints(c context.Context, request model.SamplingReque
 			"$geoWithin": bson.M{
 				"$center": []interface{}{
 					[]float64{request.Location.Coordinates[0], request.Location.Coordinates[1]},
-					0.01,
+					0.09,
 				},
 			},
 		},
