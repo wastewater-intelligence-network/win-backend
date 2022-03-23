@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -30,11 +31,33 @@ func NewDBConnection() (*DBConnection, error) {
 		return nil, err
 	}
 
-	return &DBConnection{
+	conn := &DBConnection{
 		client:   client,
 		Database: client.Database(DB_NAME),
 		ctx:      ctx,
-	}, nil
+	}
+	err = conn.createIndexes()
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+func (conn *DBConnection) createIndexes() error {
+	for _, d := range []string{"survey_sampling_site", "collection_points"} {
+		_, err := conn.Database.Collection(d).Indexes().CreateOne(
+			conn.ctx,
+			mongo.IndexModel{
+				Keys:    bson.D{{Key: "pointId", Value: 1}},
+				Options: options.Index().SetUnique(true),
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (conn *DBConnection) Insert(collection string, doc interface{}) (*mongo.InsertOneResult, error) {

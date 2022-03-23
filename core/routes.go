@@ -60,6 +60,22 @@ func (win WinApp) getRoutes() []RouteObj {
 			"/getSamplesCollectedOn",
 			win.handleGetSamplesCollectedOn,
 			utils.PolicyRules{"admin", "collector"},
+		}, {
+			"POST",
+			"/setPointForSurvey",
+			win.handleSetPointForSurvey,
+			utils.PolicyRules{"admin"},
+		}, {
+			"GET",
+			"/getAllPointsSurvey",
+			win.handleGetAllPointsSurvey,
+			utils.PolicyRules{"admin"},
+		},
+		{
+			"PATCH",
+			"/upgradeSurveyPointToCollectionPoint",
+			win.handleUpgradeSurveyPointToCollectionPoint,
+			utils.PolicyRules{"admin"},
 		},
 	}
 	return routeList

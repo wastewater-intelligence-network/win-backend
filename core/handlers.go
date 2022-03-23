@@ -337,12 +337,14 @@ func (win WinApp) handleGetCollectionPoints(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	if err = cursor.All(c.Request.Context(), &collectionPoints); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	fmt.Print(collectionPoints[0])
@@ -365,9 +367,98 @@ func (win WinApp) handleGetSamplesCollectedOn(c *gin.Context) {
 				"message": "Could not get samples data. Err: " + err.Error(),
 			},
 		)
+		return
 	}
 
 	c.JSON(http.StatusOK, samples)
+}
+
+func (win WinApp) handleSetPointForSurvey(c *gin.Context) {
+	var collectionPoint model.CollectionPoint
+
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = json.Unmarshal(body, &collectionPoint)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	_, err = win.conn.Insert(SURVEY_SAMPLING_SITE, collectionPoint)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, collectionPoint)
+}
+
+func (win WinApp) handleGetAllPointsSurvey(c *gin.Context) {
+	var collectionPoints []model.CollectionPoint
+
+	cursor, err := win.conn.Find(SURVEY_SAMPLING_SITE, gin.H{})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err = cursor.All(c.Request.Context(), &collectionPoints); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, collectionPoints)
+}
+
+func (win WinApp) handleUpgradeSurveyPointToCollectionPoint(c *gin.Context) {
+	decoder := json.NewDecoder(c.Request.Body)
+
+	var collectionPoint model.CollectionPoint
+	if err := decoder.Decode(&collectionPoint); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  500,
+				"message": "Could not parse the request body",
+			},
+		)
+		return
+	}
+
+	res := win.conn.FindOne(SURVEY_SAMPLING_SITE, gin.H{
+		"pointId": collectionPoint.PointId,
+	})
+	err := res.Decode(&collectionPoint)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	_, err = win.conn.Insert(SAMPLE_COLLECTION_DB, collectionPoint)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, collectionPoint)
 }
 
 // get schedule
