@@ -90,7 +90,7 @@ func (win WinApp) handleSetSchedule(c *gin.Context) {
 			Longitude: 77.36353,
 		},
 	} */
-	_, err := win.conn.Insert("test", schedule)
+	_, err := win.conn.Insert(COLLECTION_SCHEDULES, schedule)
 	if err != nil {
 		panic(err)
 	}
@@ -98,35 +98,24 @@ func (win WinApp) handleSetSchedule(c *gin.Context) {
 }
 
 func (win WinApp) handleGetSchedule(c *gin.Context) {
-	// user, ok := c.Get("user")
-	// if !ok {
-	// 	c.AbortWithError(http.StatusBadRequest, errors.New("User not parsed"))
-	// }
+	var schedules []model.CollectionPointSchedule
+	schedules = []model.CollectionPointSchedule{}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "schedule",
-		"user":    "user",
-		"schedule": []gin.H{
-			{
-				"assignedPointId":   23,
-				"assignedPointName": "Bhesan Jahangirabad",
-				"assignedUserId":    1,
-				"type":              "STP",
-				"latitude":          23.4524242,
-				"longitude":         77.3534242,
-				"date":              "29/11/2021",
-				"time":              "06:00 AM",
-			},
-			{
-				"name":      "Pisad",
-				"type":      "STP",
-				"latitude":  23.6452552,
-				"longitude": 77.3645478,
-				"date":      "29/11/2021",
-				"time":      "08:00 AM",
-			},
-		},
-	})
+	cursor, err := win.conn.Find(COLLECTION_SCHEDULES, gin.H{})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err = cursor.All(c.Request.Context(), &schedules); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, schedules)
 }
 
 func (win WinApp) handleSamplingRequest(c *gin.Context) {

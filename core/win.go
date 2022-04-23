@@ -11,6 +11,7 @@ var (
 	SAMPLE_COLLECTION_RECORD_DB = "sample_collection"
 	WIN_COLLECTION_USERS        = "users"
 	SURVEY_SAMPLING_SITE        = "survey_sampling_site"
+	COLLECTION_SCHEDULES        = "schedules"
 )
 
 type WinApp struct {
