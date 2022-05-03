@@ -133,7 +133,7 @@ func (win WinApp) handleSamplingRequest(c *gin.Context) {
 		)
 	}
 
-	points, err := win.GetNearbyPoints(c.Request.Context(), sampleCollRequest)
+	points, err := win.GetNearbyPoints(c, sampleCollRequest)
 	if err != nil {
 		c.AbortWithStatusJSON(
 			http.StatusOK,
@@ -244,7 +244,9 @@ func (win WinApp) handleSamplingStatusPatch(c *gin.Context) {
 	if win.isValidateSampleStatusPatch(samplingStatusRequest.StatusPatch, sample) {
 		sample.Status = model.SampleStatus(samplingStatusRequest.StatusPatch)
 
-		prevStatusList := win.getPreviousStatusList(samplingStatusRequest.StatusPatch)
+		prevStatusList := win.getPreviousStatusList(samplingStatusRequest.StatusPatch, len(sample.StatusLogList))
+
+		fmt.Println(prevStatusList)
 
 		for _, prevStatus := range prevStatusList {
 			sample.StatusLogList = append(sample.StatusLogList, model.StatusLog{

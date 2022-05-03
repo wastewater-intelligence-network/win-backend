@@ -77,13 +77,18 @@ func getValidationUserFunc(policy *utils.Policy, conn *db.DBConnection) basic.Au
 		fmt.Println(hashString)
 		fmt.Println(user)
 
+		e := auth.Extensions{}
+		e.Add("locationId", user.LocationId)
+
+		newAuthInfo := auth.NewUserInfo(
+			user.Username,
+			user.ID.String(),
+			user.Roles,
+			e,
+		)
+
 		if user.Hash == hashString {
-			return auth.NewUserInfo(
-				user.Username,
-				user.ID.String(),
-				user.Roles,
-				nil,
-			), nil
+			return newAuthInfo, nil
 		}
 
 		return nil, fmt.Errorf("Invalid credentials")

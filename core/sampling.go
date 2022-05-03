@@ -3,25 +3,51 @@ package core
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/shaj13/go-guardian/v2/auth"
 	"github.com/wastewater-intelligence-network/win-api/model"
 	"github.com/wastewater-intelligence-network/win-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (win WinApp) GetNearbyPoints(c context.Context, request model.SamplingRequest) ([]model.CollectionPoint, error) {
-	cur, err := win.conn.Find(SAMPLE_COLLECTION_DB, bson.M{
-		"location": bson.M{
-			"$geoWithin": bson.M{
-				"$center": []interface{}{
-					[]float64{request.Location.Coordinates[0], request.Location.Coordinates[1]},
-					0.01,
+func (win WinApp) GetNearbyPoints(gin *gin.Context, request model.SamplingRequest) ([]model.CollectionPoint, error) {
+	distance := 0.1
+	c := gin.Request.Context()
+	var query bson.M
+
+	if reflect.DeepEqual(request.Location, model.Location{}) {
+		u, ok := gin.Get("user")
+		if !ok {
+			return nil, fmt.Errorf("User data not found")
+		}
+		user := u.(auth.Info) //.GetExtensions().Get("locationId")
+		locationId := user.GetExtensions().Get("locationId")
+
+		if locationId == "" {
+			return nil, fmt.Errorf("No location ID  available for this user")
+		}
+
+		query = bson.M{
+			"locationId": locationId,
+		}
+	} else {
+		query = bson.M{
+			"location": bson.M{
+				"$geoWithin": bson.M{
+					"$center": []interface{}{
+						[]float64{request.Location.Coordinates[0], request.Location.Coordinates[1]},
+						distance,
+					},
 				},
 			},
-		},
-	})
+		}
+	}
+
+	cur, err := win.conn.Find(SAMPLE_COLLECTION_DB, query)
 	if err != nil {
 		return nil, err
 	}
@@ -137,10 +163,10 @@ func (win WinApp) isValidateSampleStatusPatch(statusPatch string, sample model.S
 	return false
 }
 
-func (win WinApp) getPreviousStatusList(statusPatch string) []model.SampleStatus {
+func (win WinApp) getPreviousStatusList(statusPatch string, len int) []model.SampleStatus {
 	for i, s := range model.StatusSequence {
 		if string(s) == statusPatch {
-			return model.StatusSequence[1:i]
+			return model.StatusSequence[len:i]
 		}
 	}
 	return []model.SampleStatus{}

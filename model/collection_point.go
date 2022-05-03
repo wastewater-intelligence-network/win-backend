@@ -9,4 +9,5 @@ type CollectionPoint struct {
 	Location     Location           `json:"location,omitempty" bson:"location,omitempty"`
 	Type         string             `json:"type,omitempty" bson:"type,omitempty"`
 	SamplingType string             `json:"samplingType,omitempty" bson:"samplingType,omitempty"`
+	LocationId   string             `json:"locationId,omitempty" bson:"locationId,omitempty"`
 }
